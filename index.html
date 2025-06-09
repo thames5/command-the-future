@@ -2,79 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Command the Future: Linux for Empowerment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command the Future Terminal</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="terminal" id="terminal">
-    <p>Welcome to <strong>Command the Future</strong> Linux Terminal! Type <code>help</code> to begin.</p>
-    <div id="output-area"></div>
+  <div id="terminal">
+    <div class="output">Welcome to <strong>Command the Future</strong> Linux Terminal! Type <code>help</code> to begin.</div>
     <div class="input-line">
       <span>&gt;</span>
-      <input type="text" id="terminal-input" autocomplete="off" autofocus />
+      <input type="text" id="commandInput" autofocus />
     </div>
   </div>
 
-  <!-- Testimonials Section -->
-  <section class="testimonials">
-    <h2>💬 Testimonials</h2>
-
-    <div class="testimonial">
-      <p>"Learning Linux with *Command the Future* gave me the confidence to pursue a career in DevOps. The interactive terminal was a game-changer!"</p>
-      <span>— Aayush, 19, Kathmandu</span>
-    </div>
-
-    <div class="testimonial">
-      <p>"I never thought I could understand command-line tools. This made it fun, free, and incredibly useful."</p>
-      <span>— Rina, 17, Pokhara</span>
-    </div>
-
-    <div class="testimonial">
-      <p>"I installed Ubuntu with help from the toolkit and now I use it every day for school and personal projects."</p>
-      <span>— Bishal, 18, Chitwan</span>
-    </div>
-  </section>
-
   <script>
-    const input = document.getElementById("terminal-input");
+    const input = document.getElementById("commandInput");
     const terminal = document.getElementById("terminal");
 
+    let history = [];
+    let historyIndex = -1;
+
     const commands = {
-      help: "Available commands: help, ls, grep, chmod, cron, ssh, top, clear",
-      ls: "project.txt  research/  logs/  scripts/",
-      grep: 'Searching logs... Found 2 matches for "error".',
-      chmod: "Changed permissions for scripts/",
-      cron: "Cron job set: backup.sh will run daily at 2AM.",
-      ssh: "Connecting to dev@linuxshell... Connected.",
-      top: "Showing system processes...\nPID   USER    CPU   MEM   COMMAND\n1234  root    5%    2%    node\n...",
-      clear: "clear"
+      help: `Available commands:<br>
+        help - Show available commands<br>
+        ls - List fake files<br>
+        clear - Clear the terminal<br>
+        grep [keyword] - Search fake logs<br>
+        echo [text] - Print text<br>
+        ssh - Simulate remote connection<br>
+        chmod - Show chmod usage<br>
+        cron - Display sample cron jobs`,
+
+      ls: `project-folder<br>README.md<br>index.html<br>style.css<br>script.js`,
+
+      ssh: `Connecting to server...<br>Connection established.<br>Welcome to remote system.`,
+
+      chmod: `Usage: chmod [permissions] [file]<br>Example: chmod 755 script.sh<br>Permissions changed.`,
+
+      cron: `Listing sample cron jobs:<br>
+0 9 * * * /usr/bin/python3 backup.py<br>
+30 23 * * 5 /usr/bin/bash weekly_report.sh`
     };
 
     input.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowUp") {
+        if (historyIndex > 0) {
+          historyIndex--;
+          input.value = history[historyIndex];
+        }
+        e.preventDefault();
+        return;
+      } else if (e.key === "ArrowDown") {
+        if (historyIndex < history.length - 1) {
+          historyIndex++;
+          input.value = history[historyIndex];
+        } else {
+          input.value = "";
+          historyIndex = history.length;
+        }
+        e.preventDefault();
+        return;
+      }
+
       if (e.key === "Enter") {
         const cmd = input.value.trim();
+        history.push(cmd);
+        historyIndex = history.length;
+
         const outputDiv = document.createElement("div");
-        outputDiv.className = "output-line";
-        outputDiv.textContent = "> " + cmd;
+        outputDiv.className = "output";
+        outputDiv.innerHTML = `&gt; ${cmd}`;
         terminal.insertBefore(outputDiv, input.parentNode);
 
+        const resultDiv = document.createElement("div");
+        resultDiv.className = "result";
+
         if (cmd === "clear") {
-          const outputs = document.querySelectorAll(".output-line, .output-result, .output-error");
-          outputs.forEach(el => el.remove());
+          terminal.innerHTML = "";
+          terminal.appendChild(input.parentNode);
+          input.value = "";
+          return;
         } else if (commands[cmd]) {
-          const resultDiv = document.createElement("div");
-          resultDiv.className = "output-result";
-          resultDiv.textContent = commands[cmd];
-          terminal.insertBefore(resultDiv, input.parentNode);
+          resultDiv.innerHTML = commands[cmd];
+        } else if (cmd.startsWith("grep")) {
+          const keyword = cmd.slice(4).trim().toLowerCase();
+          const logs = [
+            "log1.txt: [ERROR] Failed to connect to database",
+            "log2.txt: [ERROR] User not authorized",
+            "log3.txt: [INFO] Connection established successfully",
+            "log4.txt: [WARNING] Disk space low"
+          ];
+          const matches = logs.filter(line => line.toLowerCase().includes(keyword));
+          if (matches.length > 0) {
+            resultDiv.innerHTML = `Searching logs... Found ${matches.length} match(es) for \"${keyword}\".<br><br>` + matches.join("<br>");
+          } else {
+            resultDiv.innerHTML = `Searching logs... No matches found for \"${keyword}\".`;
+          }
+        } else if (cmd.startsWith("echo")) {
+          const echoText = cmd.slice(4).trim();
+          resultDiv.textContent = echoText;
         } else {
-          const errorDiv = document.createElement("div");
-          errorDiv.className = "output-error";
-          errorDiv.textContent = `command not found: ${cmd}`;
-          terminal.insertBefore(errorDiv, input.parentNode);
+          resultDiv.textContent = `Command not found: ${cmd}`;
         }
 
+        terminal.insertBefore(resultDiv, input.parentNode);
         input.value = "";
+        terminal.scrollTop = terminal.scrollHeight;
       }
     });
   </script>

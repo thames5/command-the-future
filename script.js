@@ -1,0 +1,94 @@
+const input = document.getElementById("commandInput");
+const terminal = document.getElementById("terminal");
+
+let history = [];
+let historyIndex = -1;
+
+const commands = {
+  help: `Available commands:<br>
+    help - Show available commands<br>
+    ls - List fake files<br>
+    clear - Clear the terminal<br>
+    grep [keyword] - Search fake logs<br>
+    echo [text] - Print text<br>
+    ssh - Simulate remote connection<br>
+    chmod - Show chmod usage<br>
+    cron - Display sample cron jobs`,
+
+  ls: `project-folder<br>README.md<br>index.html<br>style.css<br>script.js`,
+
+  ssh: `Connecting to server...<br>Connection established.<br>Welcome to remote system.`,
+
+  chmod: `Usage: chmod [permissions] [file]<br>Example: chmod 755 script.sh<br>Permissions changed.`,
+
+  cron: `Listing sample cron jobs:<br>
+0 9 * * * /usr/bin/python3 backup.py<br>
+30 23 * * 5 /usr/bin/bash weekly_report.sh`
+};
+
+input.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowUp") {
+    if (historyIndex > 0) {
+      historyIndex--;
+      input.value = history[historyIndex];
+    }
+    e.preventDefault();
+    return;
+  } else if (e.key === "ArrowDown") {
+    if (historyIndex < history.length - 1) {
+      historyIndex++;
+      input.value = history[historyIndex];
+    } else {
+      input.value = "";
+      historyIndex = history.length;
+    }
+    e.preventDefault();
+    return;
+  }
+
+  if (e.key === "Enter") {
+    const cmd = input.value.trim();
+    history.push(cmd);
+    historyIndex = history.length;
+
+    const outputDiv = document.createElement("div");
+    outputDiv.className = "output";
+    outputDiv.innerHTML = `&gt; ${cmd}`;
+    terminal.insertBefore(outputDiv, input.parentNode);
+
+    const resultDiv = document.createElement("div");
+    resultDiv.className = "result";
+
+    if (cmd === "clear") {
+      terminal.innerHTML = "";
+      terminal.appendChild(input.parentNode);
+      input.value = "";
+      return;
+    } else if (commands[cmd]) {
+      resultDiv.innerHTML = commands[cmd];
+    } else if (cmd.startsWith("grep")) {
+      const keyword = cmd.slice(4).trim().toLowerCase();
+      const logs = [
+        "log1.txt: [ERROR] Failed to connect to database",
+        "log2.txt: [ERROR] User not authorized",
+        "log3.txt: [INFO] Connection established successfully",
+        "log4.txt: [WARNING] Disk space low"
+      ];
+      const matches = logs.filter(line => line.toLowerCase().includes(keyword));
+      if (matches.length > 0) {
+        resultDiv.innerHTML = `Searching logs... Found ${matches.length} match(es) for \"${keyword}\".<br><br>` + matches.join("<br>");
+      } else {
+        resultDiv.innerHTML = `Searching logs... No matches found for \"${keyword}\".`;
+      }
+    } else if (cmd.startsWith("echo")) {
+      const echoText = cmd.slice(4).trim();
+      resultDiv.textContent = echoText;
+    } else {
+      resultDiv.textContent = `Command not found: ${cmd}`;
+    }
+
+    terminal.insertBefore(resultDiv, input.parentNode);
+    input.value = "";
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+});
