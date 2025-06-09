@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Command the Future: Linux for Empowerment</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="terminal" id="terminal">
+    <p>Welcome to <strong>Command the Future</strong> Linux Terminal! Type <code>help</code> to begin.</p>
+    <div id="output-area"></div>
+    <div class="input-line">
+      <span>&gt;</span>
+      <input type="text" id="terminal-input" autocomplete="off" autofocus />
+    </div>
+  </div>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials">
+    <h2>💬 Testimonials</h2>
+
+    <div class="testimonial">
+      <p>"Learning Linux with *Command the Future* gave me the confidence to pursue a career in DevOps. The interactive terminal was a game-changer!"</p>
+      <span>— Aayush, 19, Kathmandu</span>
+    </div>
+
+    <div class="testimonial">
+      <p>"I never thought I could understand command-line tools. This made it fun, free, and incredibly useful."</p>
+      <span>— Rina, 17, Pokhara</span>
+    </div>
+
+    <div class="testimonial">
+      <p>"I installed Ubuntu with help from the toolkit and now I use it every day for school and personal projects."</p>
+      <span>— Bishal, 18, Chitwan</span>
+    </div>
+  </section>
+
+  <script>
+    const input = document.getElementById("terminal-input");
+    const terminal = document.getElementById("terminal");
+
+    const commands = {
+      help: "Available commands: help, ls, grep, chmod, cron, ssh, top, clear",
+      ls: "project.txt  research/  logs/  scripts/",
+      grep: 'Searching logs... Found 2 matches for "error".',
+      chmod: "Changed permissions for scripts/",
+      cron: "Cron job set: backup.sh will run daily at 2AM.",
+      ssh: "Connecting to dev@linuxshell... Connected.",
+      top: "Showing system processes...\nPID   USER    CPU   MEM   COMMAND\n1234  root    5%    2%    node\n...",
+      clear: "clear"
+    };
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const cmd = input.value.trim();
+        const outputDiv = document.createElement("div");
+        outputDiv.className = "output-line";
+        outputDiv.textContent = "> " + cmd;
+        terminal.insertBefore(outputDiv, input.parentNode);
+
+        if (cmd === "clear") {
+          const outputs = document.querySelectorAll(".output-line, .output-result, .output-error");
+          outputs.forEach(el => el.remove());
+        } else if (commands[cmd]) {
+          const resultDiv = document.createElement("div");
+          resultDiv.className = "output-result";
+          resultDiv.textContent = commands[cmd];
+          terminal.insertBefore(resultDiv, input.parentNode);
+        } else {
+          const errorDiv = document.createElement("div");
+          errorDiv.className = "output-error";
+          errorDiv.textContent = `command not found: ${cmd}`;
+          terminal.insertBefore(errorDiv, input.parentNode);
+        }
+
+        input.value = "";
+      }
+    });
+  </script>
+</body>
+</html>
